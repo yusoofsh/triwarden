@@ -112,16 +112,23 @@ export default function App() {
               <Show when={state()!.rows.length} fallback={<p class="muted">{t('overlay.noLogins')}</p>}>
                 <ul>
                   <For each={state()!.rows}>
-                    {(row) => (
-                      <li>
+                    {(row, i) => (
+                      <li classList={{ best: !!row.exact }}>
+                        <div class="head">
+                          <span class="fav" aria-hidden="true">
+                            <Show when={row.icon} fallback={(row.name[0] ?? '?').toUpperCase()}>
+                              <img src={`data:image/png;base64,${row.icon}`} alt="" width="20" height="20" />
+                            </Show>
+                          </span>
                         <div class="who">
                           <span class="name">{row.name}</span>
                           <Show when={row.detail}>
                             <span class="detail">{row.detail}</span>
                           </Show>
                         </div>
+                        </div>
                         <div class="acts">
-                          <button type="button" class="primary" on:click={() => void fill(row)}>
+                          <button type="button" class="primary" autofocus={i() === 0} on:click={() => void fill(row)}>
                             {t('popup.fill')}
                           </button>
                           <button type="button" on:click={() => void copy(row, 'username', t('popup.copiedUsername'))}>

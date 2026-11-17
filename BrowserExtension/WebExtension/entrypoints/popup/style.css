@@ -74,8 +74,30 @@ li,
   display: grid;
   gap: 8px;
 }
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.fav {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  font-weight: 600;
+  color: var(--accent);
+  overflow: hidden;
+}
+li.best {
+  border-color: var(--accent);
+}
 .who {
   display: grid;
+  min-width: 0;
 }
 .name {
   font-weight: 600;
