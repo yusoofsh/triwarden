@@ -10,7 +10,7 @@ import type { Reply, Row } from '../../lib/protocol';
 const HOST = 'io.github.sinhong2011.triwarden';
 
 type Tab = { id: number; url: string | null };
-type View = 'logins' | 'codes' | 'all';
+type View = 'logins' | 'codes';
 
 async function activeTab(): Promise<Tab | null> {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
@@ -123,15 +123,23 @@ export default function App() {
   const [query, setQuery] = createSignal('');
   const [found, setFound] = createSignal<Row[]>([]);
   const [accountFilter, setAccountFilter] = createSignal('');
-  const searching = () => view() === 'all' || query().trim() !== '';
+  // An app from before `find` answers "Unsupported request.": say so once, instead of on every keystroke.
+  const [outdated, setOutdated] = createSignal(false);
+  const unsupported = (error?: string) => /unsupported/i.test(error ?? '');
+  const searching = () => query().trim() !== '';
   createEffect(() => {
     if (!searching() || view() === 'codes') return;
     const q = query().trim();
     const timer = window.setTimeout(async () => {
       try {
         const reply = await native({ command: 'find', query: q, url: url() });
-        if (reply?.ok) setFound(reply.rows ?? []);
-        else say(replyErrorMessage(reply));
+        if (reply?.ok) {
+          setOutdated(false);
+          setFound(reply.rows ?? []);
+        } else if (unsupported(reply?.error)) {
+          setOutdated(true);
+          setFound([]);
+        } else say(replyErrorMessage(reply));
       } catch (error) {
         fail(error);
       }
@@ -161,7 +169,7 @@ export default function App() {
       // Not on this site yet: add it (the app asks for approval), then fill.
       try {
         const reply = await native({ command: 'link', query: row.id, url: url() });
-        if (!reply?.ok) return say(replyErrorMessage(reply));
+        if (!reply?.ok) return say(unsupported(reply?.error) ? t('popup.updateApp') : replyErrorMessage(reply));
       } catch (error) {
         return fail(error);
       }
@@ -261,9 +269,6 @@ export default function App() {
         <button type="button" role="tab" aria-selected={view() === 'logins'} classList={{ on: view() === 'logins' }} on:click={() => setView('logins')}>
           {t('popup.tabLogins')}
         </button>
-        <button type="button" role="tab" aria-selected={view() === 'all'} classList={{ on: view() === 'all' }} on:click={() => setView('all')}>
-          {t('popup.tabAll')}
-        </button>
         <button type="button" role="tab" aria-selected={view() === 'codes'} classList={{ on: view() === 'codes' }} on:click={() => setView('codes')}>
           {t('popup.tabCodes')}
         </button>
@@ -309,7 +314,7 @@ export default function App() {
           <Show when={!state()?.problem} fallback={<p class="empty problem">{state()!.problem}</p>}>
             <Show when={url()} fallback={<p class="empty">{t('popup.notHere')}</p>}>
               <Show when={view() !== 'codes'}>
-                <Show when={shown().length} fallback={<p class="empty">{searching() ? t('popup.noResults') : t('overlay.noLogins')}</p>}>
+                <Show when={shown().length} fallback={<p class="empty">{outdated() && searching() ? t('popup.updateApp') : searching() ? t('popup.noResults') : t('overlay.noLogins')}</p>}>
                   <ul>
                     <For each={shown()}>
                       {(row, i) => (
