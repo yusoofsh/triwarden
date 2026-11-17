@@ -4,6 +4,7 @@ import { shouldRequestTotpCopy } from '../../lib/after-fill';
 import { replyErrorMessage } from '../../lib/bridge-status';
 import { fillOtp, generateTargets, isRTL, otpTargets, passwordFields, setValue, usernameFor, visible } from '../../lib/dom';
 import { t } from '../../lib/i18n';
+import { fieldObstacles } from '../../lib/field-obstacles';
 import { iconPosition, iconPositionBeside, menuLeft, menuVertical } from '../../lib/overlay-layout';
 import type { Row } from '../../lib/protocol';
 import { send } from '../../lib/send';
@@ -174,7 +175,7 @@ export default function Overlay() {
     }
     if (!visible(t.field)) return { display: 'none' };
     const r = t.field.getBoundingClientRect();
-    return iconPosition(r, rtl, innerWidth);
+    return iconPosition(r, rtl, innerWidth, fieldObstacles(t.field));
   };
 
   const menuHeight = (m: Menu) => {

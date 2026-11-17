@@ -1,4 +1,6 @@
 type Box = Pick<DOMRect, 'left' | 'right' | 'top' | 'height'>;
+/** A horizontal stretch of the page occupied by one of its own controls. */
+export type Span = { left: number; right: number };
 
 const ICON_SIZE = 16;
 /** Inset between the field's trailing border and the icon sitting inside it (1Password-style). */
@@ -11,8 +13,21 @@ const VIEWPORT_MARGIN = 8;
  * the field so it stays clickable when the field runs past the viewport. Fields too short for the
  * full icon still get it, centred on the field's midline.
  */
-export function iconPosition(box: Box, rtl: boolean, viewportWidth = Number.POSITIVE_INFINITY) {
-  const preferred = rtl ? box.left + ICON_INSIDE_INSET : box.right - ICON_SIZE - ICON_INSIDE_INSET;
+export function iconPosition(
+  box: Box,
+  rtl: boolean,
+  viewportWidth = Number.POSITIVE_INFINITY,
+  obstacles: Span[] = [],
+) {
+  let preferred = rtl ? box.left + ICON_INSIDE_INSET : box.right - ICON_SIZE - ICON_INSIDE_INSET;
+  // Step past the page's own controls (the show-password eye and the like), nearest the edge first.
+  const gap = 4;
+  const ordered = [...obstacles].sort((a, b) => (rtl ? a.left - b.left : b.right - a.right));
+  for (const o of ordered) {
+    if (preferred < o.right + gap && preferred + ICON_SIZE > o.left - gap) {
+      preferred = rtl ? o.right + gap : o.left - gap - ICON_SIZE;
+    }
+  }
   const left = Number.isFinite(viewportWidth)
     ? clamp(preferred, VIEWPORT_MARGIN, viewportWidth - ICON_SIZE - VIEWPORT_MARGIN)
     : preferred;

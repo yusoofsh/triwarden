@@ -2,6 +2,7 @@ import { createSignal, For, onCleanup, onMount, Show } from 'solid-js';
 import { replyErrorMessage } from '../../lib/bridge-status';
 import { generateTargets, isRTL, setValue, usernameFor, visible, wantsEmail, type GenerateTarget } from '../../lib/dom';
 import { t } from '../../lib/i18n';
+import { fieldObstacles } from '../../lib/field-obstacles';
 import { applyMenuDrag, generateMenuPlace, iconPosition, menuLeft, menuVertical } from '../../lib/overlay-layout';
 import type { Request } from '../../lib/protocol';
 import { send } from '../../lib/send';
@@ -230,7 +231,7 @@ export default function GenerateOverlay() {
     if (!t.field.isConnected || !visible(t.field)) return { display: 'none' };
     const open = menu()?.target.field === t.field || (who() ? whoField(who()!) === t.field : false);
     if (focusEl() !== t.field && !open) return { display: 'none' };
-    return iconPosition(t.field.getBoundingClientRect(), isRTL(t.field), innerWidth);
+    return iconPosition(t.field.getBoundingClientRect(), isRTL(t.field), innerWidth, fieldObstacles(t.field));
   };
 
   const fixedAt = (left: string, top: string, width: number) =>
