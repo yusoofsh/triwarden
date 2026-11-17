@@ -2,6 +2,7 @@ import { createSignal, For, onCleanup, onMount, Show } from 'solid-js';
 import { replyErrorMessage } from '../../lib/bridge-status';
 import { generateTargets, isRTL, setValue, usernameFor, visible, wantsEmail, type GenerateTarget } from '../../lib/dom';
 import { t } from '../../lib/i18n';
+import { fieldObstacles } from '../../lib/field-obstacles';
 import { applyMenuDrag, generateMenuPlace, iconPosition, menuLeft, menuVertical } from '../../lib/overlay-layout';
 import type { Request } from '../../lib/protocol';
 import { send } from '../../lib/send';
@@ -144,6 +145,8 @@ export default function GenerateOverlay() {
   const [targets, setTargets] = createSignal<Target[]>([]);
   const [tick, setTick] = createSignal(0);
   const [menu, setMenu] = createSignal<Menu | null>(null);
+  // The icon shows only while its field has focus (or its menu is open), like 1Password.
+  const [focusEl, setFocusEl] = createSignal<Element | null>(document.activeElement);
   /**
    * Where the person dragged the open menu. Null: it follows its field (scroll, resize). Never kept after closing:
    * the menu always opens next to the field it belongs to.
@@ -223,10 +226,12 @@ export default function GenerateOverlay() {
     setTick((n) => n + 1);
   }
 
-  const place = (t: Target) => {
+  const place = (t: { field: HTMLInputElement }) => {
     tick();
     if (!t.field.isConnected || !visible(t.field)) return { display: 'none' };
-    return iconPosition(t.field.getBoundingClientRect(), isRTL(t.field), innerWidth);
+    const open = menu()?.target.field === t.field || (who() ? whoField(who()!) === t.field : false);
+    if (focusEl() !== t.field && !open) return { display: 'none' };
+    return iconPosition(t.field.getBoundingClientRect(), isRTL(t.field), innerWidth, fieldObstacles(t.field));
   };
 
   const fixedAt = (left: string, top: string, width: number) =>
@@ -515,6 +520,14 @@ export default function GenerateOverlay() {
   }
 
   onMount(() => {
+    const focusIn = (e: FocusEvent) => setFocusEl(e.target as Element);
+    const focusOut = () => setFocusEl(null);
+    document.addEventListener('focusin', focusIn, true);
+    document.addEventListener('focusout', focusOut, true);
+    onCleanup(() => {
+      document.removeEventListener('focusin', focusIn, true);
+      document.removeEventListener('focusout', focusOut, true);
+    });
     scan();
     let timer: number | undefined;
     const rescan = () => {
@@ -635,7 +648,7 @@ export default function GenerateOverlay() {
             on:mousedown={(e) => e.preventDefault()}
             on:click={() => toggle(target)}
           >
-            <AppMark size={22} />
+            <AppMark size={16} />
           </button>
         )}
       </For>
@@ -650,7 +663,7 @@ export default function GenerateOverlay() {
             on:mousedown={(e) => e.preventDefault()}
             on:click={() => toggleWho(tg)}
           >
-            <AppMark size={22} />
+            <AppMark size={16} />
           </button>
         )}
       </For>

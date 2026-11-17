@@ -18,6 +18,8 @@ export default defineConfig({
     name: '__MSG_extName__',
     description: '__MSG_extDescription__',
     icons: { 48: 'icon-48.png', 96: 'icon-96.png', 128: 'icon-128.png' },
+    // The toolbar button: a click opens the popup.
+    action: { default_title: '__MSG_extName__' },
     permissions: ['nativeMessaging', 'contextMenus', 'storage'],
     commands: {
       'fill-login': {

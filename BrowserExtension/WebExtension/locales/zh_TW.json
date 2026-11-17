@@ -2,16 +2,13 @@
   "extName": "Triwarden",
   "extDescription": "從 Triwarden 保险箱填入並儲存登入資料。填入時會在 App 中要求 Touch ID。",
   "cmdFillLogin": "填入此頁面的登入資料或一次性驗證碼",
-
   "noAnswer": "Triwarden 沒有回應。",
   "unavailable": "無法使用 Triwarden。",
   "dismiss": "關閉",
-
   "bridge": {
     "appNotRunning": "Triwarden 未在執行 — 請開啟 Triwarden 以使用瀏覽器擴充功能。",
     "connectionDisabled": "此連線已在「設定 › 瀏覽器」或「開發人員」中關閉。"
   },
-
   "overlay": {
     "fillWithTriwarden": "用 Triwarden 填入",
     "lookingForLogins": "正在尋找登入資料…",
@@ -28,14 +25,12 @@
     "openToUnlock": "開啟 Triwarden",
     "codeCopied": "已複製驗證碼"
   },
-
   "ctx": {
     "autofill": "自動填入登入資料",
     "copyUsername": "拷貝使用者名稱",
     "copyPassword": "拷貝密碼",
     "copyTotp": "拷貝驗證碼"
   },
-
   "gen": {
     "suggestPassword": "建議一組強密碼",
     "suggestPasswordAria": "用 Triwarden 建議一組強密碼",
@@ -87,7 +82,6 @@
     "newUsernameDetail": "與你的其他帳號無關聯",
     "alsoFillsPassword": "同時填入強密碼"
   },
-
   "save": {
     "dialog": "儲存登入資訊",
     "saveFor": "儲存 $1 的登入資訊?",
@@ -102,5 +96,36 @@
     "toAccount": "儲存到 $1",
     "chooseAccount": "儲存到帳號",
     "updated": "密碼已更新。"
+  },
+  "popup": {
+    "fill": "填入",
+    "username": "使用者名稱",
+    "password": "密碼",
+    "code": "驗證碼",
+    "copy": "拷貝",
+    "again": "重新產生",
+    "generate": "產生密碼",
+    "generator": "密碼產生器",
+    "passphrase": "通關密語",
+    "refresh": "重新整理",
+    "notHere": "Triwarden 不會在此頁面執行。",
+    "copied": "已拷貝",
+    "copiedUsername": "已拷貝使用者名稱",
+    "copiedPassword": "已拷貝密碼",
+    "copiedCode": "已拷貝驗證碼",
+    "tabLogins": "登入",
+    "tabCodes": "驗證碼",
+    "forSite": "適用於 $1",
+    "clickToFill": "點按填入",
+    "showCodes": "顯示驗證碼",
+    "codesHint": "顯示驗證碼需要在 Triwarden 中核准。",
+    "copyUsername": "拷貝使用者名稱",
+    "copyPassword": "拷貝密碼",
+    "s0": "—",
+    "s1": "弱",
+    "s2": "普通",
+    "s3": "強",
+    "s4": "非常強",
+    "autoSignIn": "網站只有一個登入項目時自動登入"
   }
 }

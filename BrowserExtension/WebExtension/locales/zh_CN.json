@@ -2,16 +2,13 @@
   "extName": "Triwarden",
   "extDescription": "从 Triwarden 保险库填充并保存登录信息。填充时会在应用中要求 Touch ID。",
   "cmdFillLogin": "填充此页面的登录信息或一次性验证码",
-
   "noAnswer": "Triwarden 没有响应。",
   "unavailable": "无法使用 Triwarden。",
   "dismiss": "关闭",
-
   "bridge": {
     "appNotRunning": "Triwarden 未在运行 — 请打开 Triwarden 以使用浏览器扩展。",
     "connectionDisabled": "此连接已在“设置 › 浏览器”或“开发者”中关闭。"
   },
-
   "overlay": {
     "fillWithTriwarden": "用 Triwarden 填充",
     "lookingForLogins": "正在查找登录信息…",
@@ -28,14 +25,12 @@
     "openToUnlock": "打开 Triwarden",
     "codeCopied": "已复制验证码"
   },
-
   "ctx": {
     "autofill": "自动填充登录信息",
     "copyUsername": "拷贝用户名",
     "copyPassword": "拷贝密码",
     "copyTotp": "拷贝验证码"
   },
-
   "gen": {
     "suggestPassword": "建议一组强密码",
     "suggestPasswordAria": "用 Triwarden 建议一组强密码",
@@ -87,7 +82,6 @@
     "newUsernameDetail": "与你的其他账户无关联",
     "alsoFillsPassword": "同时填入强密码"
   },
-
   "save": {
     "dialog": "保存登录信息",
     "saveFor": "保存 $1 的登录信息?",
@@ -102,5 +96,36 @@
     "toAccount": "保存到 $1",
     "chooseAccount": "保存到账户",
     "updated": "密码已更新。"
+  },
+  "popup": {
+    "fill": "填充",
+    "username": "用户名",
+    "password": "密码",
+    "code": "验证码",
+    "copy": "复制",
+    "again": "重新生成",
+    "generate": "生成密码",
+    "generator": "密码生成器",
+    "passphrase": "口令短语",
+    "refresh": "刷新",
+    "notHere": "Triwarden 不在此页面运行。",
+    "copied": "已复制",
+    "copiedUsername": "已复制用户名",
+    "copiedPassword": "已复制密码",
+    "copiedCode": "已复制验证码",
+    "tabLogins": "登录",
+    "tabCodes": "验证码",
+    "forSite": "适用于 $1",
+    "clickToFill": "点按填充",
+    "showCodes": "显示验证码",
+    "codesHint": "显示验证码需要在 Triwarden 中批准。",
+    "copyUsername": "复制用户名",
+    "copyPassword": "复制密码",
+    "s0": "—",
+    "s1": "弱",
+    "s2": "一般",
+    "s3": "强",
+    "s4": "非常强",
+    "autoSignIn": "网站只有一个登录项时自动登录"
   }
 }

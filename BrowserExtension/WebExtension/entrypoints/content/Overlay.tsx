@@ -4,7 +4,8 @@ import { shouldRequestTotpCopy } from '../../lib/after-fill';
 import { replyErrorMessage } from '../../lib/bridge-status';
 import { fillOtp, generateTargets, isRTL, otpTargets, passwordFields, setValue, usernameFor, visible } from '../../lib/dom';
 import { t } from '../../lib/i18n';
-import { iconPosition, menuLeft, menuVertical } from '../../lib/overlay-layout';
+import { fieldObstacles } from '../../lib/field-obstacles';
+import { iconPosition, iconPositionBeside, menuLeft, menuVertical } from '../../lib/overlay-layout';
 import type { Row } from '../../lib/protocol';
 import { send } from '../../lib/send';
 import { AppMark } from './AppMark';
@@ -92,6 +93,8 @@ export default function Overlay() {
   const [targets, setTargets] = createSignal<Target[]>([]);
   const [tick, setTick] = createSignal(0); // bumped on scroll/resize so positions are re-read
   const [menu, setMenu] = createSignal<Menu | null>(null);
+  // The icon shows only while its field has focus (or its menu is open), like 1Password.
+  const [focusEl, setFocusEl] = createSignal<Element | null>(document.activeElement);
   const [active, setActive] = createSignal(0); // the highlighted row, moved with the arrow keys
   const [now, setNow] = createSignal(Date.now()); // ticks once a second while the menu shows, for the countdowns
   const [toast, setToast] = createSignal<string | null>(null); // quiet "Code copied" after fill, when the app did
@@ -108,6 +111,18 @@ export default function Overlay() {
     autoOpened = false;
     setMenu(null);
   };
+
+  // Targets appear on load and as steps change (username page, then password page, then code page).
+  // Not reset by every rescan (a page that keeps changing would never settle): one pending look at a time.
+  let autoPending = false;
+  createEffect(() => {
+    if (!targets().length || autoPending) return;
+    autoPending = true;
+    setTimeout(() => {
+      autoPending = false;
+      void autoSignIn();
+    }, 500);
+  });
 
   // While a menu shows: tick the countdowns, and fetch codes again when one has rolled over.
   createEffect(() => {
@@ -157,19 +172,22 @@ export default function Overlay() {
 
   const place = (t: Target) => {
     tick();
+    const f = focusEl();
+    const active = f === t.field || (t.otp?.includes(f as HTMLInputElement) ?? false) || menu()?.target === t;
+    if (!active) return { display: 'none' };
     if (!t.field.isConnected) return { display: 'none' };
     // In a right-to-left field the text starts at the right edge, so the icon goes on the left, out of its way.
     const rtl = isRTL(t.field);
     const last = t.otp?.at(-1);
     if (last && t.otp && t.otp.length > 1) {
-      // A row of one-digit boxes: the icon sits just past the last box, same as every other field.
+      // A row of one-digit boxes: the icon sits just past the last box so it never covers a digit.
       const r = last.getBoundingClientRect();
       if (r.width < 8) return { display: 'none' };
-      return iconPosition(r, rtl, innerWidth);
+      return iconPositionBeside(r, rtl, innerWidth);
     }
     if (!visible(t.field)) return { display: 'none' };
     const r = t.field.getBoundingClientRect();
-    return iconPosition(r, rtl, innerWidth);
+    return iconPosition(r, rtl, innerWidth, fieldObstacles(t.field));
   };
 
   const menuHeight = (m: Menu) => {
@@ -256,7 +274,7 @@ export default function Overlay() {
    * Does not open the suggestion menu on focus. Safari and Chrome draw their system AutoFill panel under the field
    * in the browser/OS layer, which always covers our shadow UI — so focus stays icon-only. Click the mark beside
    * the field or use the keyboard shortcut / right-click menu to open Triwarden's list (placed above the field
-   * when possible). The mark sits just outside the field so it does not cover the value.
+   * when possible). The mark sits inside the field's trailing edge.
    */
   function offerFor(el: Element | null): boolean {
     const t = targets().find((x) => x.field === el || x.otp?.includes(el as HTMLInputElement));
@@ -285,7 +303,7 @@ export default function Overlay() {
     toastTimer = window.setTimeout(() => setToast(null), 1800);
   }
 
-  async function choose(row: Row, target: Target) {
+  async function choose(row: Row, target: Target, auto = false): Promise<boolean> {
     close();
     // Ask the app to copy with this fill when there is no OTP field (setting + totp live in the app).
     const copyTotp = shouldRequestTotpCopy(!!target.otp || otpTargets().length > 0);
@@ -295,7 +313,7 @@ export default function Overlay() {
       copyTotp,
     });
     if (!filled.ok) {
-      if (filled.code === 'vault_locked') {
+      if (filled.code === 'vault_locked' && !auto) {
         setMenu({
           target,
           auto: false,
@@ -307,7 +325,7 @@ export default function Overlay() {
           revealed: true,
         });
       }
-      return;
+      return false;
     }
     filling = true;
     try {
@@ -326,9 +344,77 @@ export default function Overlay() {
       // Focus events from the fill arrive synchronously; give them a moment, then listen again.
       setTimeout(() => (filling = false), 400);
     }
+    return true;
+  }
+
+  // ---- Sign in by itself: a site with exactly one stored login is filled (code included) and submitted on load.
+  // Several logins: nothing happens, the person picks as usual. Each kind of step runs once per page load, and not
+  // again within AUTO_COOLDOWN_MS in this tab, so a wrong password can't loop through fill → submit → fill.
+  const autoRan = new Set<string>();
+  let autoEnabled = true;
+  const AUTO_COOLDOWN_MS = 30_000;
+
+  async function autoSignIn() {
+    if (!autoEnabled || window !== window.top || document.visibilityState !== 'visible') return;
+    const list = targets();
+    // A password step first; a username-only or code-only step when that is all the page has.
+    const target = list.find((x) => !x.otp && x.pw) ?? list.find((x) => !x.otp) ?? list.find((x) => x.otp);
+    if (!target || !target.field.isConnected || !visible(target.field)) return;
+    const kind = target.otp ? 'otp' : target.pw ? 'login' : 'user';
+    if (autoRan.has(kind)) return;
+    const stampKey = `triwarden-auto:${kind}`;
+    try {
+      const last = Number(sessionStorage.getItem(stampKey) ?? 0);
+      if (Date.now() - last < AUTO_COOLDOWN_MS) return;
+    } catch {
+      // No sessionStorage (sandboxed frame): the once-per-load guard still holds.
+    }
+    autoRan.add(kind);
+    const reply = await send({ command: 'match', silent: true });
+    if (!reply.ok) return;
+    const rows = target.otp ? (reply.rows ?? []).filter((r) => r.totpPeriod) : (reply.rows ?? []);
+    if (rows.length !== 1) return; // none: nothing to do; several: the person picks
+    try {
+      sessionStorage.setItem(stampKey, String(Date.now()));
+    } catch {
+      // See above.
+    }
+    if (!(await choose(rows[0]!, target, true))) return;
+    // Let the page's own handlers see the new values, then submit the way a person would.
+    await new Promise((r) => setTimeout(r, 250));
+    submitFrom(target.otp?.at(-1) ?? target.pw ?? target.field);
+  }
+
+  /** Press the form's own submit button (or submit the form); with no form, Enter in the field. */
+  function submitFrom(field: HTMLInputElement) {
+    const form = field.form;
+    if (form) {
+      const button = [...form.querySelectorAll<HTMLButtonElement | HTMLInputElement>('button, input[type="submit"]')].find(
+        (b) => !b.disabled && visible(b as HTMLElement) && (b.type === 'submit' || (b.tagName === 'BUTTON' && !b.getAttribute('type'))),
+      );
+      if (button) button.click();
+      else form.requestSubmit();
+      return;
+    }
+    for (const type of ['keydown', 'keypress', 'keyup']) {
+      field.dispatchEvent(new KeyboardEvent(type, { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }));
+    }
   }
 
   onMount(() => {
+    const focusIn = (e: FocusEvent) => setFocusEl(e.target as Element);
+    const focusOut = () => setFocusEl(null);
+    document.addEventListener('focusin', focusIn, true);
+    document.addEventListener('focusout', focusOut, true);
+    onCleanup(() => {
+      document.removeEventListener('focusin', focusIn, true);
+      document.removeEventListener('focusout', focusOut, true);
+    });
+    void Promise.resolve(browser.storage?.local?.get('autoSignIn'))
+      .then((v) => {
+        if (v?.autoSignIn === false) autoEnabled = false;
+      })
+      .catch(() => {});
     scan();
     let timer: number | undefined;
     const rescan = () => {
@@ -415,7 +501,7 @@ export default function Overlay() {
             on:mousedown={(e) => e.preventDefault()}
             on:click={() => open(target)}
           >
-            <AppMark size={22} />
+            <AppMark size={16} />
           </button>
         )}
       </For>

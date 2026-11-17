@@ -1,61 +1,58 @@
 type Box = Pick<DOMRect, 'left' | 'right' | 'top' | 'height'>;
+/** A horizontal stretch of the page occupied by one of its own controls. */
+export type Span = { left: number; right: number };
 
-/**
- * Horizontal room left clear of Safari / Chrome's native AutoFill key decoration.
- * Geometric only — we do not observe the native icon (fragile across OS / browser builds).
- * Native control is ~20–24px at the trailing edge; 28px leaves a small gap beside our 22px mark.
- * Used only when the viewport has no room to keep the icon outside the field.
- */
-export const SYSTEM_AUTOFILL_ICON_CLEARANCE = 28;
-
-const ICON_SIZE = 22;
-/** Space between the field's border box and an icon sitting just outside it. Enough to clear the border without floating. */
-export const ICON_OUTSIDE_GAP = 6;
+const ICON_SIZE = 16;
+/** Inset between the field's trailing border and the icon sitting inside it (1Password-style). */
+export const ICON_INSIDE_INSET = 8;
 const VIEWPORT_MARGIN = 8;
 
 /**
- * Place the field icon just outside the trailing edge of the box — to the right in left-to-right
- * fields, to the left in right-to-left fields — so it never covers the value or the browser's own
- * trailing decoration. Every overlay icon (fill, generate, one-time code, and any other) uses this.
- *
- * `viewportWidth` keeps the icon on screen. The outside gap shrinks before the icon is allowed to
- * overlap the field. When the field itself runs into the viewport edge, the icon sits clear of the
- * native AutoFill control instead of stacking on it.
+ * Place the field icon inside the trailing edge of the box, vertically centred: the right end in
+ * left-to-right fields, the left end in right-to-left fields. It is clamped to the visible part of
+ * the field so it stays clickable when the field runs past the viewport. Fields too short for the
+ * full icon still get it, centred on the field's midline.
  */
-export function iconPosition(box: Box, rtl: boolean, viewportWidth = Number.POSITIVE_INFINITY) {
-  const preferred = rtl ? box.left - ICON_SIZE - ICON_OUTSIDE_GAP : box.right + ICON_OUTSIDE_GAP;
-  const left = clampIconLeft(preferred, box, rtl, viewportWidth);
-  return { display: 'grid', left: `${left}px`, top: `${box.top + (box.height - ICON_SIZE) / 2}px` };
+export function iconPosition(
+  box: Box,
+  rtl: boolean,
+  viewportWidth = Number.POSITIVE_INFINITY,
+  obstacles: Span[] = [],
+) {
+  let preferred = rtl ? box.left + ICON_INSIDE_INSET : box.right - ICON_SIZE - ICON_INSIDE_INSET;
+  // Step past the page's own controls (the show-password eye and the like), nearest the edge first.
+  const gap = 10;
+  const ordered = [...obstacles].sort((a, b) => (rtl ? a.left - b.left : b.right - a.right));
+  for (const o of ordered) {
+    if (preferred < o.right + gap && preferred + ICON_SIZE > o.left - gap) {
+      preferred = rtl ? o.right + gap : o.left - gap - ICON_SIZE;
+    }
+  }
+  const left = Number.isFinite(viewportWidth)
+    ? clamp(preferred, VIEWPORT_MARGIN, viewportWidth - ICON_SIZE - VIEWPORT_MARGIN)
+    : preferred;
+  return { display: 'grid', left: `${left}px`, top: `${centredTop(box)}px` };
+}
+
+/** For a row of one-digit boxes the icon sits just past the last box, so it never covers a digit. */
+export function iconPositionBeside(box: Box, rtl: boolean, viewportWidth = Number.POSITIVE_INFINITY) {
+  const gap = 6;
+  const preferred = rtl ? box.left - ICON_SIZE - gap : box.right + gap;
+  const left = Number.isFinite(viewportWidth)
+    ? clamp(preferred, VIEWPORT_MARGIN, viewportWidth - ICON_SIZE - VIEWPORT_MARGIN)
+    : preferred;
+  return { display: 'grid', left: `${left}px`, top: `${centredTop(box)}px` };
+}
+
+/** Top edge that centres the icon on the field's midline, on a whole pixel so the mark stays crisp. */
+function centredTop(box: Box) {
+  return Math.round(box.top + (box.height - ICON_SIZE) / 2);
 }
 
 function clamp(value: number, min: number, max: number) {
   // A viewport narrower than the icon plus margins cannot satisfy both edges. Keep the start margin.
   if (max < min) return min;
   return Math.max(min, Math.min(value, max));
-}
-
-function clampIconLeft(preferred: number, box: Box, rtl: boolean, viewportWidth: number) {
-  if (!Number.isFinite(viewportWidth)) return preferred;
-  const maxLeft = viewportWidth - ICON_SIZE - VIEWPORT_MARGIN;
-
-  if (rtl) {
-    if (preferred < VIEWPORT_MARGIN) {
-      // Still outside the field when the viewport margin clears its trailing (left) edge.
-      if (VIEWPORT_MARGIN + ICON_SIZE <= box.left && VIEWPORT_MARGIN <= maxLeft) return VIEWPORT_MARGIN;
-      return clamp(box.left + SYSTEM_AUTOFILL_ICON_CLEARANCE, VIEWPORT_MARGIN, maxLeft);
-    }
-    if (preferred > maxLeft) return clamp(preferred, VIEWPORT_MARGIN, maxLeft);
-    return preferred;
-  }
-
-  if (preferred > maxLeft) {
-    // Still outside the field when the viewport margin clears its trailing (right) edge.
-    if (maxLeft >= box.right && maxLeft >= VIEWPORT_MARGIN) return maxLeft;
-    const clearOfDecoration = box.right - SYSTEM_AUTOFILL_ICON_CLEARANCE - ICON_SIZE;
-    return clamp(clearOfDecoration, VIEWPORT_MARGIN, maxLeft);
-  }
-  if (preferred < VIEWPORT_MARGIN) return clamp(preferred, VIEWPORT_MARGIN, maxLeft);
-  return preferred;
 }
 
 /** Align the menu with the field's writing start while keeping it inside the viewport. */
@@ -102,10 +99,11 @@ export function menuVertical(
 ): MenuVertical {
   const aboveRoom = box.top - 12;
   const belowRoom = viewportHeight - box.bottom - 12;
-  if (aboveRoom >= height || aboveRoom >= belowRoom) {
-    return { top: `${Math.max(8, box.top - gap - height)}px`, above: true };
+  // Below the field first, like 1Password; above only when that side has more room.
+  if (belowRoom >= height || belowRoom >= aboveRoom) {
+    return { top: `${box.bottom + gap}px`, above: false };
   }
-  return { top: `${box.bottom + gap}px`, above: false };
+  return { top: `${Math.max(8, box.top - gap - height)}px`, above: true };
 }
 
 type Rect = Pick<DOMRect, 'left' | 'right' | 'top' | 'bottom'>;
