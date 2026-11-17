@@ -127,6 +127,10 @@ export default function App() {
   const [outdated, setOutdated] = createSignal(false);
   const unsupported = (error?: string) => /unsupported/i.test(error ?? '');
   const searching = () => query().trim() !== '';
+  // Ask once whether this app knows `find`; an older one gets no search bar at all, rather than one that errors.
+  void native({ command: 'find', query: '\u0000', url: undefined })
+    .then((reply) => setOutdated(!reply?.ok && unsupported(reply?.error)))
+    .catch(() => {});
   createEffect(() => {
     if (!searching() || view() === 'codes') return;
     const q = query().trim();
@@ -277,7 +281,7 @@ export default function App() {
         </button>
       </div>
 
-      <Show when={view() !== 'codes'}>
+      <Show when={view() !== 'codes' && !outdated()}>
         <input
           class="search"
           type="search"
