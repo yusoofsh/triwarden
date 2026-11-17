@@ -106,16 +106,6 @@ function setUpContextMenu() {
     }
   };
 
-  /** Toolbar badge: how many logins match this tab ('!' when the app can't be reached, empty for none). */
-  const setBadge = async (tabId: number, text: string) => {
-    try {
-      await browser.action.setBadgeText({ tabId, text });
-      if (text) await browser.action.setBadgeBackgroundColor({ tabId, color: text === '!' ? '#d97706' : '#1d6fb8' });
-    } catch {
-      // No toolbar button (or the tab is gone).
-    }
-  };
-
   const label = (row: { name: string; detail?: string }) => {
     const text = row.detail ? `${row.name} (${row.detail})` : row.name;
     return text.replace(/&/g, '&&'); // a lone & marks a keyboard mnemonic in menu titles
@@ -137,7 +127,6 @@ function setUpContextMenu() {
       }
     }
     if (mine !== generation) return;
-    void setBadge(tabId, problem ? '!' : logins.length ? String(logins.length) : '');
     await browser.contextMenus.removeAll();
     if (mine !== generation || !url) return; // nothing to offer on pages we do not run on
 
