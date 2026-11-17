@@ -111,8 +111,24 @@ function setUpContextMenu() {
     return text.replace(/&/g, '&&'); // a lone & marks a keyboard mnemonic in menu titles
   };
 
+  /** The right-click menu is opt-in (popup checkbox); off by default. */
+  const menuEnabled = async () => {
+    try {
+      return (await browser.storage.local.get('contextMenu')).contextMenu === true;
+    } catch {
+      return false;
+    }
+  };
+  browser.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.contextMenu) schedule();
+  });
+
   async function rebuild(tabId: number) {
     const mine = ++generation;
+    if (!(await menuEnabled())) {
+      await browser.contextMenus.removeAll();
+      return;
+    }
     const url = await pageUrl(tabId);
     if (mine !== generation) return;
     let logins: Login[] = [];
