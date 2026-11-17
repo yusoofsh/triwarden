@@ -1,8 +1,8 @@
 type Box = Pick<DOMRect, 'left' | 'right' | 'top' | 'height'>;
 
-const ICON_SIZE = 22;
+const ICON_SIZE = 16;
 /** Inset between the field's trailing border and the icon sitting inside it (1Password-style). */
-export const ICON_INSIDE_INSET = 6;
+export const ICON_INSIDE_INSET = 8;
 const VIEWPORT_MARGIN = 8;
 
 /**

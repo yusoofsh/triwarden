@@ -92,6 +92,8 @@ export default function Overlay() {
   const [targets, setTargets] = createSignal<Target[]>([]);
   const [tick, setTick] = createSignal(0); // bumped on scroll/resize so positions are re-read
   const [menu, setMenu] = createSignal<Menu | null>(null);
+  // The icon shows only while its field has focus (or its menu is open), like 1Password.
+  const [focusEl, setFocusEl] = createSignal<Element | null>(document.activeElement);
   const [active, setActive] = createSignal(0); // the highlighted row, moved with the arrow keys
   const [now, setNow] = createSignal(Date.now()); // ticks once a second while the menu shows, for the countdowns
   const [toast, setToast] = createSignal<string | null>(null); // quiet "Code copied" after fill, when the app did
@@ -157,6 +159,9 @@ export default function Overlay() {
 
   const place = (t: Target) => {
     tick();
+    const f = focusEl();
+    const active = f === t.field || (t.otp?.includes(f as HTMLInputElement) ?? false) || menu()?.target === t;
+    if (!active) return { display: 'none' };
     if (!t.field.isConnected) return { display: 'none' };
     // In a right-to-left field the text starts at the right edge, so the icon goes on the left, out of its way.
     const rtl = isRTL(t.field);
@@ -329,6 +334,14 @@ export default function Overlay() {
   }
 
   onMount(() => {
+    const focusIn = (e: FocusEvent) => setFocusEl(e.target as Element);
+    const focusOut = () => setFocusEl(null);
+    document.addEventListener('focusin', focusIn, true);
+    document.addEventListener('focusout', focusOut, true);
+    onCleanup(() => {
+      document.removeEventListener('focusin', focusIn, true);
+      document.removeEventListener('focusout', focusOut, true);
+    });
     scan();
     let timer: number | undefined;
     const rescan = () => {
@@ -415,7 +428,7 @@ export default function Overlay() {
             on:mousedown={(e) => e.preventDefault()}
             on:click={() => open(target)}
           >
-            <AppMark size={22} />
+            <AppMark size={16} />
           </button>
         )}
       </For>

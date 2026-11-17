@@ -17,13 +17,13 @@ const field = { left: 100, right: 300, top: 40, height: 42 } as DOMRect;
 
 describe('overlay placement', () => {
   it('places the icon inside the trailing edge of the field, vertically centred', () => {
-    expect(iconPosition(field, false)).toMatchObject({ left: `${300 - 22 - ICON_INSIDE_INSET}px`, top: '50px' });
-    expect(iconPosition(field, true)).toMatchObject({ left: `${100 + ICON_INSIDE_INSET}px`, top: '50px' });
+    expect(iconPosition(field, false)).toMatchObject({ left: `${300 - 16 - ICON_INSIDE_INSET}px`, top: '53px' });
+    expect(iconPosition(field, true)).toMatchObject({ left: `${100 + ICON_INSIDE_INSET}px`, top: '53px' });
   });
 
   it('keeps the icon on screen when the field runs past the viewport', () => {
     const past = { left: 100, right: 2000, top: 40, height: 42 } as DOMRect;
-    expect(iconPosition(past, false, 1600).left).toBe(`${1600 - 22 - 8}px`);
+    expect(iconPosition(past, false, 1600).left).toBe(`${1600 - 16 - 8}px`);
     const before = { left: -300, right: 200, top: 40, height: 42 } as DOMRect;
     expect(iconPosition(before, true, 1600).left).toBe('8px');
   });
@@ -59,14 +59,14 @@ describe('generateMenuPlace', () => {
   it('sits above the new password when it fits, ending at the outside icon', () => {
     const p = generateMenuPlace(field, confirm, 280, 110, viewport, false);
     expect(p.vertical).toEqual({ top: `${300 - 6 - 110}px`, above: true });
-    const iconLeft = 400 - 22 - ICON_INSIDE_INSET;
+    const iconLeft = 400 - 16 - ICON_INSIDE_INSET;
     expect(p.left).toBe(menuLeftNearIcon(iconLeft, 280, false, 1200));
   });
 
   it('anchors the menu to the icon after the viewport pulls that icon inward', () => {
     const narrow = { width: 500, height: 800 };
     const edge = { left: 400, right: 490, top: 300, bottom: 340 };
-    const iconLeft = 490 - 22 - ICON_INSIDE_INSET;
+    const iconLeft = 490 - 16 - ICON_INSIDE_INSET;
     const p = generateMenuPlace(edge, null, 200, 110, narrow, false);
     expect(p.left).toBe(menuLeftNearIcon(iconLeft, 200, false, narrow.width));
   });

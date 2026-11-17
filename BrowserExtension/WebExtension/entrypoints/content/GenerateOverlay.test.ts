@@ -94,8 +94,12 @@ describe('GenerateOverlay', () => {
     const host = await mount();
     const keys = host.querySelectorAll<HTMLButtonElement>('.key');
     expect(keys).toHaveLength(2); // the new password, and the sign-up's email field
-    // The field rect is 0–300; the icon sits inside its right edge, not over the value.
-    expect(keys[0]!.style.left).toBe('272px');
+    // Hidden until the field has focus.
+    expect(keys[0]!.style.display).toBe('none');
+    document.querySelector<HTMLInputElement>('[name=p]')!.focus();
+    await tick();
+    // The field rect is 0–300; the 16px icon sits 8px inside its right edge, not over the value.
+    expect(keys[0]!.style.left).toBe('276px');
     keys[0]!.click();
     await tick(5);
     expect(host.querySelector('.gen-value')!.textContent).toBe('Gen3rated!Pw');
