@@ -31,7 +31,7 @@ export function iconPosition(
   const left = Number.isFinite(viewportWidth)
     ? clamp(preferred, VIEWPORT_MARGIN, viewportWidth - ICON_SIZE - VIEWPORT_MARGIN)
     : preferred;
-  return { display: 'grid', left: `${left}px`, top: `${box.top + (box.height - ICON_SIZE) / 2}px` };
+  return { display: 'grid', left: `${left}px`, top: `${centredTop(box)}px` };
 }
 
 /** For a row of one-digit boxes the icon sits just past the last box, so it never covers a digit. */
@@ -41,7 +41,12 @@ export function iconPositionBeside(box: Box, rtl: boolean, viewportWidth = Numbe
   const left = Number.isFinite(viewportWidth)
     ? clamp(preferred, VIEWPORT_MARGIN, viewportWidth - ICON_SIZE - VIEWPORT_MARGIN)
     : preferred;
-  return { display: 'grid', left: `${left}px`, top: `${box.top + (box.height - ICON_SIZE) / 2}px` };
+  return { display: 'grid', left: `${left}px`, top: `${centredTop(box)}px` };
+}
+
+/** Top edge that centres the icon on the field's midline, on a whole pixel so the mark stays crisp. */
+function centredTop(box: Box) {
+  return Math.round(box.top + (box.height - ICON_SIZE) / 2);
 }
 
 function clamp(value: number, min: number, max: number) {
