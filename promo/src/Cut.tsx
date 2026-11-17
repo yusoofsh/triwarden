@@ -336,7 +336,7 @@ const EndCut: React.FC = () => {
   return (
     <Paper>
       <AbsoluteFill style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ width: 240, height: 240, borderRadius: 56, overflow: "hidden", position: "relative", transform: `scale(${punch(f, 0, 0.2)})`, background: "linear-gradient(#8FCDF3, #4BA7E0)", boxShadow: "0 40px 80px -30px rgba(11,42,64,.5)" }}>
+        <div style={{ width: 240, height: 240, borderRadius: 56, overflow: "hidden", position: "relative", transform: `scale(${punch(f, 0, 0.2)})`, background: "linear-gradient(#2E8BD8, #0B3F73)", boxShadow: "0 40px 80px -30px rgba(11,42,64,.5)" }}>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 15%, rgba(255,255,255,.28), rgba(255,255,255,0) 75%)" }} />
           <Dial size={240} rot={rot} style={{ position: "absolute", inset: 0 }} />
         </div>

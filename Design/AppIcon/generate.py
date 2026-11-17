@@ -30,7 +30,7 @@ STROKE = 40
 GAP = 30  # clear space across each notch
 
 PALETTES = {
-    "light": dict(bg0="#8FCDF3", bg1="#4BA7E0", bez=("#FFFFFF", "#E7EEF4", "#D3DEE8"), tick="#0B2A40",
+    "light": dict(bg0="#2E8BD8", bg1="#0B3F73", bez=("#FFFFFF", "#E7EEF4", "#D3DEE8"), tick="#0B2A40",
                   door0="#FFFFFF", door1="#E4F2FB", rim="#0B5E96", shadow="#0B2A40",
                   outer=("#A9DAF7", "#6DBBEB"), middle=("#4AA8E4", "#2283C9"), inner=("#1670AE", "#0A4E80"),
                   hub=("#1670AE", "#0A4E80")),
