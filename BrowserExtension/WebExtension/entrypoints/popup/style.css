@@ -1,0 +1,150 @@
+:root {
+  color-scheme: light dark;
+  --bg: #fff;
+  --fg: #14212b;
+  --muted: #6b7c89;
+  --line: #e3eaef;
+  --accent: #1d6fb8;
+  --card: #f4f8fb;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161c21;
+    --fg: #e8eef2;
+    --muted: #93a3af;
+    --line: #29333b;
+    --accent: #4aa8e4;
+    --card: #1e262c;
+  }
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  width: 340px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13px/1.4 system-ui, -apple-system, sans-serif;
+}
+main {
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+h1 {
+  font-size: 15px;
+  margin: 0;
+}
+h2 {
+  font-size: 12px;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.site {
+  flex: 1;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  max-height: 280px;
+  overflow: auto;
+}
+li,
+.gen {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+.who {
+  display: grid;
+}
+.name {
+  font-weight: 600;
+}
+.detail,
+.muted {
+  color: var(--muted);
+}
+.problem {
+  color: #d97706;
+  margin: 0;
+}
+.muted {
+  margin: 0;
+}
+.acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+button {
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+button:hover {
+  border-color: var(--accent);
+}
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+button.wide {
+  width: 100%;
+  padding: 7px;
+}
+button.ghost {
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  padding: 0 4px;
+}
+.gen-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.gen-head label {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--muted);
+}
+code {
+  display: block;
+  word-break: break-all;
+  font: 13px ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 7px 8px;
+}
+.note {
+  margin: 0;
+  text-align: center;
+  color: var(--accent);
+}

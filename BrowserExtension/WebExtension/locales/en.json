@@ -2,16 +2,13 @@
   "extName": "Triwarden",
   "extDescription": "Fill and save logins from your Triwarden vault. Filling asks for Touch ID in the app.",
   "cmdFillLogin": "Fill the login or one-time code on this page",
-
   "noAnswer": "No answer from Triwarden.",
   "unavailable": "Triwarden isn't available.",
   "dismiss": "Dismiss",
-
   "bridge": {
     "appNotRunning": "Triwarden isn't running — open Triwarden to use the browser extension.",
     "connectionDisabled": "This connection is turned off in Settings › Browser or Developer."
   },
-
   "overlay": {
     "fillWithTriwarden": "Fill with Triwarden",
     "lookingForLogins": "Looking for logins…",
@@ -28,14 +25,12 @@
     "openToUnlock": "Open Triwarden",
     "codeCopied": "Code copied"
   },
-
   "ctx": {
     "autofill": "Autofill login",
     "copyUsername": "Copy username",
     "copyPassword": "Copy password",
     "copyTotp": "Copy verification code"
   },
-
   "gen": {
     "suggestPassword": "Suggest a strong password",
     "suggestPasswordAria": "Suggest a strong password with Triwarden",
@@ -87,7 +82,6 @@
     "newUsernameDetail": "Not linked to your other accounts",
     "alsoFillsPassword": "Also fills a strong password"
   },
-
   "save": {
     "dialog": "Save login",
     "saveFor": "Save this login for $1?",
@@ -102,5 +96,22 @@
     "toAccount": "Saves to $1",
     "chooseAccount": "Save to account",
     "updated": "Password updated."
+  },
+  "popup": {
+    "fill": "Fill",
+    "username": "Username",
+    "password": "Password",
+    "code": "Code",
+    "copy": "Copy",
+    "again": "Another",
+    "generate": "Generate password",
+    "generator": "Password generator",
+    "passphrase": "Passphrase",
+    "refresh": "Refresh",
+    "notHere": "Triwarden doesn't run on this page.",
+    "copied": "Copied",
+    "copiedUsername": "Username copied",
+    "copiedPassword": "Password copied",
+    "copiedCode": "Code copied"
   }
 }

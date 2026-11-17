@@ -2,16 +2,13 @@
   "extName": "Triwarden",
   "extDescription": "Triwarden の保管庫からログイン情報を入力・保存します。入力時はアプリで Touch ID を求めます。",
   "cmdFillLogin": "このページのログインまたはワンタイムコードを入力",
-
   "noAnswer": "Triwarden から応答がありません。",
   "unavailable": "Triwarden を利用できません。",
   "dismiss": "閉じる",
-
   "bridge": {
     "appNotRunning": "Triwarden が起動していません — ブラウザ拡張機能を使うには Triwarden を開いてください。",
     "connectionDisabled": "この接続は「設定 › ブラウザ」または「デベロッパ」でオフになっています。"
   },
-
   "overlay": {
     "fillWithTriwarden": "Triwarden で入力",
     "lookingForLogins": "ログインを検索中…",
@@ -28,14 +25,12 @@
     "openToUnlock": "Triwarden を開く",
     "codeCopied": "コードをコピーしました"
   },
-
   "ctx": {
     "autofill": "ログインを自動入力",
     "copyUsername": "ユーザー名をコピー",
     "copyPassword": "パスワードをコピー",
     "copyTotp": "確認コードをコピー"
   },
-
   "gen": {
     "suggestPassword": "強いパスワードを提案",
     "suggestPasswordAria": "Triwarden で強いパスワードを提案",
@@ -87,7 +82,6 @@
     "newUsernameDetail": "ほかのアカウントとは関連付けられません",
     "alsoFillsPassword": "強いパスワードも入力します"
   },
-
   "save": {
     "dialog": "ログインを保存",
     "saveFor": "$1 のログインを保存しますか?",
@@ -102,5 +96,22 @@
     "toAccount": "保存先: $1",
     "chooseAccount": "保存先のアカウント",
     "updated": "パスワードを更新しました。"
+  },
+  "popup": {
+    "fill": "入力",
+    "username": "ユーザ名",
+    "password": "パスワード",
+    "code": "コード",
+    "copy": "コピー",
+    "again": "再生成",
+    "generate": "パスワードを生成",
+    "generator": "パスワード生成",
+    "passphrase": "パスフレーズ",
+    "refresh": "更新",
+    "notHere": "このページでは Triwarden は動作しません。",
+    "copied": "コピーしました",
+    "copiedUsername": "ユーザ名をコピーしました",
+    "copiedPassword": "パスワードをコピーしました",
+    "copiedCode": "コードをコピーしました"
   }
 }

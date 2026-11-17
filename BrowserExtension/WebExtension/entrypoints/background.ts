@@ -116,11 +116,6 @@ function setUpContextMenu() {
     }
   };
 
-  // Clicking the toolbar button opens the same vault overlay as the shortcut.
-  browser.action?.onClicked.addListener((tab) => {
-    if (tab.id != null) void browser.tabs.sendMessage(tab.id, { trigger: 'fill' }).catch(() => {});
-  });
-
   const label = (row: { name: string; detail?: string }) => {
     const text = row.detail ? `${row.name} (${row.detail})` : row.name;
     return text.replace(/&/g, '&&'); // a lone & marks a keyboard mnemonic in menu titles
