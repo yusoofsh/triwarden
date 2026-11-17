@@ -22,9 +22,9 @@ describe('overlay placement', () => {
   });
 
   it('steps past a control of the page that sits over the trailing edge', () => {
-    // An eye button at 262–290 inside the 100–300 field: the 16px icon ends 4px before it.
-    expect(iconPosition(field, false, undefined, [{ left: 262, right: 290 }]).left).toBe(`${262 - 4 - 16}px`);
-    expect(iconPosition(field, true, undefined, [{ left: 110, right: 138 }]).left).toBe(`${138 + 4}px`);
+    // An eye button at 262–290 inside the 100–300 field: the 16px icon ends 10px before it.
+    expect(iconPosition(field, false, undefined, [{ left: 262, right: 290 }]).left).toBe(`${262 - 10 - 16}px`);
+    expect(iconPosition(field, true, undefined, [{ left: 110, right: 138 }]).left).toBe(`${138 + 10}px`);
     // A control far from the icon changes nothing.
     expect(iconPosition(field, false, undefined, [{ left: 120, right: 140 }]).left).toBe(`${300 - 16 - 8}px`);
   });

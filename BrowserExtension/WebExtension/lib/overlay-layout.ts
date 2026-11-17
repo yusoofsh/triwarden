@@ -21,7 +21,7 @@ export function iconPosition(
 ) {
   let preferred = rtl ? box.left + ICON_INSIDE_INSET : box.right - ICON_SIZE - ICON_INSIDE_INSET;
   // Step past the page's own controls (the show-password eye and the like), nearest the edge first.
-  const gap = 4;
+  const gap = 10;
   const ordered = [...obstacles].sort((a, b) => (rtl ? a.left - b.left : b.right - a.right));
   for (const o of ordered) {
     if (preferred < o.right + gap && preferred + ICON_SIZE > o.left - gap) {
