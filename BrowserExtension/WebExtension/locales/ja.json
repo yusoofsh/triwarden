@@ -127,6 +127,12 @@
     "s3": "強い",
     "s4": "非常に強い",
     "autoSignIn": "ログインが 1 件だけのサイトでは自動でサインインする",
-    "contextMenu": "右クリックメニューに Triwarden を表示"
+    "contextMenu": "右クリックメニューに Triwarden を表示",
+    "tabAll": "すべて",
+    "search": "ログインを検索",
+    "noResults": "ログインが見つかりません。",
+    "link": "紐付け",
+    "accounts": "アカウント",
+    "allAccounts": "すべてのアカウント"
   }
 }

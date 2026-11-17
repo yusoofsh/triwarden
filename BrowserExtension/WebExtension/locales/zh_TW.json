@@ -127,6 +127,12 @@
     "s3": "強",
     "s4": "非常強",
     "autoSignIn": "網站只有一個登入項目時自動登入",
-    "contextMenu": "在右鍵選單中顯示 Triwarden"
+    "contextMenu": "在右鍵選單中顯示 Triwarden",
+    "tabAll": "全部",
+    "search": "尋找登入項目",
+    "noResults": "找不到登入項目。",
+    "link": "連結",
+    "accounts": "帳號",
+    "allAccounts": "所有帳號"
   }
 }

@@ -10,7 +10,7 @@ import type { Reply, Row } from '../../lib/protocol';
 const HOST = 'io.github.sinhong2011.triwarden';
 
 type Tab = { id: number; url: string | null };
-type View = 'logins' | 'codes';
+type View = 'logins' | 'codes' | 'all';
 
 async function activeTab(): Promise<Tab | null> {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
@@ -117,6 +117,35 @@ export default function App() {
   const fail = (error: unknown) => say(String((error as Error)?.message ?? error));
 
   const url = () => state()?.tab?.url ?? undefined;
+
+  // ---- Find: the whole vault, every unlocked account. Typing (or the All tab) asks the app; the site's own logins
+  // show when the bar is empty. A login that isn't linked to this site yet gets "Link": it adds the site, then fills.
+  const [query, setQuery] = createSignal('');
+  const [found, setFound] = createSignal<Row[]>([]);
+  const [accountFilter, setAccountFilter] = createSignal('');
+  const searching = () => view() === 'all' || query().trim() !== '';
+  createEffect(() => {
+    if (!searching() || view() === 'codes') return;
+    const q = query().trim();
+    const timer = window.setTimeout(async () => {
+      try {
+        const reply = await native({ command: 'find', query: q, url: url() });
+        if (reply?.ok) setFound(reply.rows ?? []);
+        else say(replyErrorMessage(reply));
+      } catch (error) {
+        fail(error);
+      }
+    }, 150);
+    onCleanup(() => clearTimeout(timer));
+  });
+  /** What the list shows: search results, or this site's logins. */
+  const source = (): Row[] => (searching() ? found() : (state()?.rows ?? []));
+  /** Accounts present in the list (only when more than one is unlocked). */
+  const accounts = () => [...new Set(source().map((r) => r.account).filter((a): a is string => !!a))];
+  const shown = () => source().filter((r) => !accountFilter() || r.account === accountFilter());
+  /** A site's own logins are linked; a search result is when the app says it already belongs to the page. */
+  const linked = (row: Row) => !searching() || row.exact === true;
+
   const host = () => {
     try {
       return url() ? new URL(url()!).hostname.replace(/^www\./, '') : '';
@@ -128,6 +157,15 @@ export default function App() {
   const fill = async (row: Row) => {
     const tab = state()?.tab;
     if (!tab) return;
+    if (!linked(row)) {
+      // Not on this site yet: add it (the app asks for approval), then fill.
+      try {
+        const reply = await native({ command: 'link', query: row.id, url: url() });
+        if (!reply?.ok) return say(replyErrorMessage(reply));
+      } catch (error) {
+        return fail(error);
+      }
+    }
     await browser.tabs.sendMessage(tab.id, { trigger: 'fill', row: row.id }).catch(() => {});
     window.close();
   };
@@ -223,6 +261,9 @@ export default function App() {
         <button type="button" role="tab" aria-selected={view() === 'logins'} classList={{ on: view() === 'logins' }} on:click={() => setView('logins')}>
           {t('popup.tabLogins')}
         </button>
+        <button type="button" role="tab" aria-selected={view() === 'all'} classList={{ on: view() === 'all' }} on:click={() => setView('all')}>
+          {t('popup.tabAll')}
+        </button>
         <button type="button" role="tab" aria-selected={view() === 'codes'} classList={{ on: view() === 'codes' }} on:click={() => setView('codes')}>
           {t('popup.tabCodes')}
         </button>
@@ -231,10 +272,35 @@ export default function App() {
         </button>
       </div>
 
+      <Show when={view() !== 'codes'}>
+        <input
+          class="search"
+          type="search"
+          placeholder={t('popup.search')}
+          aria-label={t('popup.search')}
+          value={query()}
+          on:input={(e) => setQuery(e.currentTarget.value)}
+        />
+        <Show when={accounts().length > 1}>
+          <div class="accts" role="group" aria-label={t('popup.accounts')}>
+            <button type="button" classList={{ on: accountFilter() === '' }} on:click={() => setAccountFilter('')}>
+              {t('popup.allAccounts')}
+            </button>
+            <For each={accounts()}>
+              {(a) => (
+                <button type="button" classList={{ on: accountFilter() === a }} on:click={() => setAccountFilter(a)}>
+                  {a}
+                </button>
+              )}
+            </For>
+          </div>
+        </Show>
+      </Show>
+
       <section class="card">
         <div class="cap">
           <span class="capname">{host() ? t('popup.forSite', host()) : t('extName')}</span>
-          <Show when={view() === 'logins' && state()?.rows.length}>
+          <Show when={view() !== 'codes' && shown().length}>
             <span class="capnote">{t('popup.clickToFill')}</span>
           </Show>
         </div>
@@ -242,10 +308,10 @@ export default function App() {
         <Show when={!state.loading} fallback={<p class="empty">{t('overlay.lookingForLogins')}</p>}>
           <Show when={!state()?.problem} fallback={<p class="empty problem">{state()!.problem}</p>}>
             <Show when={url()} fallback={<p class="empty">{t('popup.notHere')}</p>}>
-              <Show when={view() === 'logins'}>
-                <Show when={state()!.rows.length} fallback={<p class="empty">{t('overlay.noLogins')}</p>}>
+              <Show when={view() !== 'codes'}>
+                <Show when={shown().length} fallback={<p class="empty">{searching() ? t('popup.noResults') : t('overlay.noLogins')}</p>}>
                   <ul>
-                    <For each={state()!.rows}>
+                    <For each={shown()}>
                       {(row, i) => (
                         <li>
                           <button type="button" class="row" autofocus={i() === 0} on:click={() => void fill(row)}>
@@ -256,15 +322,23 @@ export default function App() {
                                 <span class="detail">{row.detail}</span>
                               </Show>
                             </span>
+                            <Show when={row.account && !accountFilter()}>
+                              <span class="chip" title={row.account}>{row.account!.split('@')[0]}</span>
+                            </Show>
+                            <Show when={!linked(row)}>
+                              <span class="chip link">{t('popup.link')}</span>
+                            </Show>
                           </button>
-                          <span class="mini">
-                            <button type="button" class="round sm" title={t('popup.copyUsername')} aria-label={t('popup.copyUsername')} on:click={() => void copy(row, 'username', t('popup.copiedUsername'))}>
-                              <Icon path={P.user} />
-                            </button>
-                            <button type="button" class="round sm" title={t('popup.copyPassword')} aria-label={t('popup.copyPassword')} on:click={() => void copy(row, 'password', t('popup.copiedPassword'))}>
-                              <Icon path={P.key} />
-                            </button>
-                          </span>
+                          <Show when={linked(row)}>
+                            <span class="mini">
+                              <button type="button" class="round sm" title={t('popup.copyUsername')} aria-label={t('popup.copyUsername')} on:click={() => void copy(row, 'username', t('popup.copiedUsername'))}>
+                                <Icon path={P.user} />
+                              </button>
+                              <button type="button" class="round sm" title={t('popup.copyPassword')} aria-label={t('popup.copyPassword')} on:click={() => void copy(row, 'password', t('popup.copiedPassword'))}>
+                                <Icon path={P.key} />
+                              </button>
+                            </span>
+                          </Show>
                         </li>
                       )}
                     </For>

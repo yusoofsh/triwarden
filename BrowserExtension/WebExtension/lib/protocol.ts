@@ -15,7 +15,7 @@ export type Row = {
   exact?: boolean;
   /** The login also holds a passkey. The extension still fills its password: passkey sign-in is the app's. */
   passkey?: boolean;
-  /** `pending`: the account Save writes to, named only when more than one is unlocked. */
+  /** The account the login lives in (`match`, `find`) or that Save writes to (`pending`): named only when more than one is unlocked. */
   account?: string;
 };
 
@@ -61,7 +61,10 @@ export type Reply = {
 
 /** `pending`: logins waiting to be saved for this site (rows: `name` = login it updates, `detail` = username); with
  *  `query` (a row id) answers it, `field: 'save'` saves, anything else is Not Now. */
-export type Command = 'match' | 'fill' | 'save' | 'copy' | 'generate' | 'pending';
+/** `find`: search the whole vault (`query`; rows carry `account` with several accounts unlocked and `exact` when the
+ *  login already belongs to `url`). `link`: add the page's site (`url`) to the login `query`. Popup only. */
+export type Command = 'match' | 'fill' | 'save' | 'copy' | 'generate' | 'pending' | 'find' | 'link';
+// `find` and `link` are not relayed for pages: only the popup, which talks to the app itself, uses them.
 export const COMMANDS: ReadonlySet<string> = new Set<Command>(['match', 'fill', 'save', 'copy', 'generate', 'pending']);
 
 export type Request = {

@@ -127,6 +127,12 @@
     "s3": "强",
     "s4": "非常强",
     "autoSignIn": "网站只有一个登录项时自动登录",
-    "contextMenu": "在右键菜单中显示 Triwarden"
+    "contextMenu": "在右键菜单中显示 Triwarden",
+    "tabAll": "全部",
+    "search": "查找登录项",
+    "noResults": "未找到登录项。",
+    "link": "关联",
+    "accounts": "账户",
+    "allAccounts": "所有账户"
   }
 }
