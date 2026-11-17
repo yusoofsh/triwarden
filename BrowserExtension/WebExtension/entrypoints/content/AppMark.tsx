@@ -29,13 +29,13 @@ export const AppMark = (props: { size: number }) => {
         <stop offset="1" stop-color="#0A4E80" />
       </linearGradient>
     </defs>
-    <circle cx="512" cy="512" r="344" fill={`url(#${id(\'face\')})`} />
+    <circle cx="512" cy="512" r="344" fill={`url(#${id('face')})`} />
     <circle cx="512" cy="512" r="338" fill="none" stroke="#0B2A40" stroke-opacity=".16" stroke-width="12" />
-    <path d="M477.0 779.7 A270 270 0 1 1 547.0 779.7" fill="none" stroke-width="40" stroke-linecap="round" stroke={`url(#${id(\'r1\')})`} />
-    <path d="M477.0 710.9 A202 202 0 1 1 547.0 710.9" fill="none" stroke-width="40" stroke-linecap="round" stroke={`url(#${id(\'r2\')})`} />
-    <path d="M477.0 641.3 A134 134 0 1 1 547.0 641.3" fill="none" stroke-width="40" stroke-linecap="round" stroke={`url(#${id(\'r3\')})`} />
-    <circle cx="512" cy="488" r="46" fill={`url(#${id(\'r3\')})`} />
-    <path d="M494 500 L530 500 L540 592 Q541 604 529 604 L495 604 Q483 604 484 592 Z" fill={`url(#${id(\'r3\')})`} />
+    <path d="M477.0 779.7 A270 270 0 1 1 547.0 779.7" fill="none" stroke-width="40" stroke-linecap="round" stroke={`url(#${id('r1')})`} />
+    <path d="M477.0 710.9 A202 202 0 1 1 547.0 710.9" fill="none" stroke-width="40" stroke-linecap="round" stroke={`url(#${id('r2')})`} />
+    <path d="M477.0 641.3 A134 134 0 1 1 547.0 641.3" fill="none" stroke-width="40" stroke-linecap="round" stroke={`url(#${id('r3')})`} />
+    <circle cx="512" cy="488" r="46" fill={`url(#${id('r3')})`} />
+    <path d="M494 500 L530 500 L540 592 Q541 604 529 604 L495 604 Q483 604 484 592 Z" fill={`url(#${id('r3')})`} />
   </svg>
   );
 };
