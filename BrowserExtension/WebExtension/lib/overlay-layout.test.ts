@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   applyMenuDrag,
   generateMenuPlace,
-  ICON_OUTSIDE_GAP,
+  ICON_INSIDE_INSET,
   iconPosition,
   menuLeft,
   menuLeftNearIcon,
@@ -11,50 +11,21 @@ import {
   menuVerticalGenerate,
   pinOverlayHost,
   pinToTopLayer,
-  SYSTEM_AUTOFILL_ICON_CLEARANCE,
 } from './overlay-layout';
 
 const field = { left: 100, right: 300, top: 40, height: 42 } as DOMRect;
 
 describe('overlay placement', () => {
-  it('places every icon just outside the trailing edge of the field', () => {
-    // LTR: past the right edge with a gap. RTL: the 22px icon ends ICON_OUTSIDE_GAP before the left edge.
-    expect(iconPosition(field, false)).toMatchObject({ left: `${300 + ICON_OUTSIDE_GAP}px`, top: '50px' });
-    expect(iconPosition(field, true)).toMatchObject({ left: `${100 - 22 - ICON_OUTSIDE_GAP}px`, top: '50px' });
+  it('places the icon inside the trailing edge of the field, vertically centred', () => {
+    expect(iconPosition(field, false)).toMatchObject({ left: `${300 - 22 - ICON_INSIDE_INSET}px`, top: '50px' });
+    expect(iconPosition(field, true)).toMatchObject({ left: `${100 + ICON_INSIDE_INSET}px`, top: '50px' });
   });
 
-  it('keeps the icon outside the value when the viewport has room beside the field', () => {
-    const box = { left: 100, right: 400, top: 10, height: 32 } as DOMRect;
-    const ltr = Number.parseFloat(iconPosition(box, false, 1200).left);
-    const rtl = Number.parseFloat(iconPosition(box, true, 1200).left);
-    expect(ltr).toBeGreaterThanOrEqual(box.right + ICON_OUTSIDE_GAP);
-    expect(rtl + 22).toBeLessThanOrEqual(box.left - ICON_OUTSIDE_GAP);
-  });
-
-  it('pulls a left-to-right icon back inside the viewport without covering the native decoration', () => {
-    const viewport = 1600;
-    // Preferred 1576 needs a gap; the viewport margin shrinks it to flush (1570) and keeps it outside.
-    const shrink = { left: 100, right: 1570, top: 40, height: 42 } as DOMRect;
-    expect(iconPosition(shrink, false, viewport).left).toBe('1570px');
-
-    // No room outside: sit clear of the trailing ~28px native control (1572 - 28 - 22).
-    const flush = { left: 100, right: 1572, top: 40, height: 42 } as DOMRect;
-    expect(iconPosition(flush, false, viewport).left).toBe(`${1572 - SYSTEM_AUTOFILL_ICON_CLEARANCE - 22}px`);
-
-    // Field runs past the viewport, so the decoration is off-screen. Keep the icon clickable.
+  it('keeps the icon on screen when the field runs past the viewport', () => {
     const past = { left: 100, right: 2000, top: 40, height: 42 } as DOMRect;
-    expect(iconPosition(past, false, viewport).left).toBe(`${viewport - 22 - 8}px`);
-  });
-
-  it('mirrors viewport clamping for right-to-left fields', () => {
-    const viewport = 1600;
-    // Preferred is 4px with the gap; the 8px margin still leaves the icon outside the field.
-    const shrink = { left: 32, right: 300, top: 40, height: 42 } as DOMRect;
-    expect(iconPosition(shrink, true, viewport).left).toBe('8px');
-
-    // No room outside: start just after the native control on the trailing (left) edge.
-    const flush = { left: 10, right: 200, top: 40, height: 42 } as DOMRect;
-    expect(iconPosition(flush, true, viewport).left).toBe(`${10 + SYSTEM_AUTOFILL_ICON_CLEARANCE}px`);
+    expect(iconPosition(past, false, 1600).left).toBe(`${1600 - 22 - 8}px`);
+    const before = { left: -300, right: 200, top: 40, height: 42 } as DOMRect;
+    expect(iconPosition(before, true, 1600).left).toBe('8px');
   });
 
   it('aligns the menu to the field start in either direction', () => {
@@ -69,22 +40,14 @@ describe('overlay placement', () => {
   });
 
 
-  it('prefers the menu above the field when there is room (system AutoFill owns below)', () => {
+  it('prefers the menu below the field when there is room', () => {
     const mid = { top: 400, bottom: 442 };
-    // top = 400 - 6 - 200 = 194
-    expect(menuVertical(mid, 200, 900)).toEqual({ top: '194px', above: true });
+    expect(menuVertical(mid, 200, 900)).toEqual({ top: '448px', above: false });
   });
 
-  it('falls back below when the space above is too tight', () => {
-    const nearTop = { top: 40, bottom: 82 };
-    expect(menuVertical(nearTop, 200, 900)).toEqual({ top: '88px', above: false });
-  });
-
-  it('picks the larger side when neither fits the full menu height', () => {
-    const cramped = { top: 80, bottom: 120 };
-    // aboveRoom = 68, belowRoom = 200 - 120 - 12 = 68 → above preferred when tied via >=
-    expect(menuVertical(cramped, 200, 200)).toEqual({ top: '8px', above: true }); // clamped
-    expect(menuVertical(cramped, 200, 400)).toEqual({ top: '126px', above: false });
+  it('falls back above when the space below is too tight', () => {
+    const nearBottom = { top: 700, bottom: 742 };
+    expect(menuVertical(nearBottom, 200, 800)).toEqual({ top: '494px', above: true });
   });
 });
 
@@ -96,14 +59,14 @@ describe('generateMenuPlace', () => {
   it('sits above the new password when it fits, ending at the outside icon', () => {
     const p = generateMenuPlace(field, confirm, 280, 110, viewport, false);
     expect(p.vertical).toEqual({ top: `${300 - 6 - 110}px`, above: true });
-    const iconLeft = 400 + ICON_OUTSIDE_GAP;
+    const iconLeft = 400 - 22 - ICON_INSIDE_INSET;
     expect(p.left).toBe(menuLeftNearIcon(iconLeft, 280, false, 1200));
   });
 
   it('anchors the menu to the icon after the viewport pulls that icon inward', () => {
     const narrow = { width: 500, height: 800 };
     const edge = { left: 400, right: 490, top: 300, bottom: 340 };
-    const iconLeft = 490 - SYSTEM_AUTOFILL_ICON_CLEARANCE - 22;
+    const iconLeft = 490 - 22 - ICON_INSIDE_INSET;
     const p = generateMenuPlace(edge, null, 200, 110, narrow, false);
     expect(p.left).toBe(menuLeftNearIcon(iconLeft, 200, false, narrow.width));
   });

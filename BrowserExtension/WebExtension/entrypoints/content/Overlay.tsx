@@ -4,7 +4,7 @@ import { shouldRequestTotpCopy } from '../../lib/after-fill';
 import { replyErrorMessage } from '../../lib/bridge-status';
 import { fillOtp, generateTargets, isRTL, otpTargets, passwordFields, setValue, usernameFor, visible } from '../../lib/dom';
 import { t } from '../../lib/i18n';
-import { iconPosition, menuLeft, menuVertical } from '../../lib/overlay-layout';
+import { iconPosition, iconPositionBeside, menuLeft, menuVertical } from '../../lib/overlay-layout';
 import type { Row } from '../../lib/protocol';
 import { send } from '../../lib/send';
 import { AppMark } from './AppMark';
@@ -162,10 +162,10 @@ export default function Overlay() {
     const rtl = isRTL(t.field);
     const last = t.otp?.at(-1);
     if (last && t.otp && t.otp.length > 1) {
-      // A row of one-digit boxes: the icon sits just past the last box, same as every other field.
+      // A row of one-digit boxes: the icon sits just past the last box so it never covers a digit.
       const r = last.getBoundingClientRect();
       if (r.width < 8) return { display: 'none' };
-      return iconPosition(r, rtl, innerWidth);
+      return iconPositionBeside(r, rtl, innerWidth);
     }
     if (!visible(t.field)) return { display: 'none' };
     const r = t.field.getBoundingClientRect();
@@ -256,7 +256,7 @@ export default function Overlay() {
    * Does not open the suggestion menu on focus. Safari and Chrome draw their system AutoFill panel under the field
    * in the browser/OS layer, which always covers our shadow UI — so focus stays icon-only. Click the mark beside
    * the field or use the keyboard shortcut / right-click menu to open Triwarden's list (placed above the field
-   * when possible). The mark sits just outside the field so it does not cover the value.
+   * when possible). The mark sits inside the field's trailing edge.
    */
   function offerFor(el: Element | null): boolean {
     const t = targets().find((x) => x.field === el || x.otp?.includes(el as HTMLInputElement));
