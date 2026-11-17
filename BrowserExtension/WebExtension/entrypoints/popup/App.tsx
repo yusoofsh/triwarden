@@ -205,6 +205,13 @@ export default function App() {
     setAuto(on);
     void browser.storage.local.set({ autoSignIn: on });
   };
+  // The right-click menu entries (off by default).
+  const [menu, setMenu] = createSignal(false);
+  void browser.storage.local.get('contextMenu').then((v) => setMenu(v.contextMenu === true));
+  const toggleMenu = (on: boolean) => {
+    setMenu(on);
+    void browser.storage.local.set({ contextMenu: on });
+  };
   const copyGenerated = async () => {
     await navigator.clipboard.writeText(generated());
     say(t('popup.copied'));
@@ -333,6 +340,11 @@ export default function App() {
       <label class="auto">
         <input type="checkbox" checked={auto()} on:change={(e) => toggleAuto(e.currentTarget.checked)} />
         <span>{t('popup.autoSignIn')}</span>
+      </label>
+
+      <label class="auto">
+        <input type="checkbox" checked={menu()} on:change={(e) => toggleMenu(e.currentTarget.checked)} />
+        <span>{t('popup.contextMenu')}</span>
       </label>
 
       <Show when={note()}>

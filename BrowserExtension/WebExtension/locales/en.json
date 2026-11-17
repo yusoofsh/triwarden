@@ -126,6 +126,7 @@
     "s2": "Fair",
     "s3": "Strong",
     "s4": "Very strong",
-    "autoSignIn": "Sign in automatically when a site has only one login"
+    "autoSignIn": "Sign in automatically when a site has only one login",
+    "contextMenu": "Show Triwarden in the right-click menu"
   }
 }
