@@ -112,6 +112,20 @@
     "copied": "コピーしました",
     "copiedUsername": "ユーザ名をコピーしました",
     "copiedPassword": "パスワードをコピーしました",
-    "copiedCode": "コードをコピーしました"
+    "copiedCode": "コードをコピーしました",
+    "tabLogins": "ログイン",
+    "tabCodes": "コード",
+    "forSite": "$1 用",
+    "clickToFill": "クリックで入力",
+    "showCodes": "コードを表示",
+    "codesHint": "コードの表示には Triwarden での承認が必要です。",
+    "copyUsername": "ユーザ名をコピー",
+    "copyPassword": "パスワードをコピー",
+    "s0": "—",
+    "s1": "弱い",
+    "s2": "普通",
+    "s3": "強い",
+    "s4": "非常に強い",
+    "autoSignIn": "ログインが 1 件だけのサイトでは自動でサインインする"
   }
 }

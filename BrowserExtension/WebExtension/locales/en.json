@@ -112,6 +112,20 @@
     "copied": "Copied",
     "copiedUsername": "Username copied",
     "copiedPassword": "Password copied",
-    "copiedCode": "Code copied"
+    "copiedCode": "Code copied",
+    "tabLogins": "Logins",
+    "tabCodes": "Codes",
+    "forSite": "For $1",
+    "clickToFill": "Click to fill",
+    "showCodes": "Show codes",
+    "codesHint": "Codes ask for approval in Triwarden.",
+    "copyUsername": "Copy username",
+    "copyPassword": "Copy password",
+    "s0": "—",
+    "s1": "Weak",
+    "s2": "Fair",
+    "s3": "Strong",
+    "s4": "Very strong",
+    "autoSignIn": "Sign in automatically when a site has only one login"
   }
 }

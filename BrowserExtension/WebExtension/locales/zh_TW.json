@@ -112,6 +112,20 @@
     "copied": "已拷貝",
     "copiedUsername": "已拷貝使用者名稱",
     "copiedPassword": "已拷貝密碼",
-    "copiedCode": "已拷貝驗證碼"
+    "copiedCode": "已拷貝驗證碼",
+    "tabLogins": "登入",
+    "tabCodes": "驗證碼",
+    "forSite": "適用於 $1",
+    "clickToFill": "點按填入",
+    "showCodes": "顯示驗證碼",
+    "codesHint": "顯示驗證碼需要在 Triwarden 中核准。",
+    "copyUsername": "拷貝使用者名稱",
+    "copyPassword": "拷貝密碼",
+    "s0": "—",
+    "s1": "弱",
+    "s2": "普通",
+    "s3": "強",
+    "s4": "非常強",
+    "autoSignIn": "網站只有一個登入項目時自動登入"
   }
 }
