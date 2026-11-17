@@ -13,6 +13,21 @@ export const textLike = (input: HTMLInputElement): boolean => {
   return ['text', 'email', 'tel', ''].includes(type) || /username|email/.test(input.autocomplete || '');
 };
 
+const IDENTITY_HINT = /e-?mail|user.?name|log-?in|account|identifier/i;
+
+/**
+ * Email and username fields that sit outside a login form (a Google Form, a checkout, a newsletter box): they say
+ * what they are by type, autocomplete, name, id, label or placeholder. Offered the same logins, filled on request only.
+ */
+export function identityFields(): HTMLInputElement[] {
+  return [...document.querySelectorAll<HTMLInputElement>('input')].filter((i) => {
+    if (!visible(i) || i.readOnly || !textLike(i)) return false;
+    const labels = [...(i.labels ?? [])].map((l) => l.textContent);
+    const hint = [i.autocomplete, i.name, i.id, i.getAttribute('aria-label'), i.placeholder, ...labels].filter(Boolean).join(' ');
+    return i.type === 'email' || /\b(username|email)\b/.test(i.autocomplete || '') || IDENTITY_HINT.test(hint);
+  });
+}
+
 /** The username field that belongs to a password field: the nearest text-like input before it. */
 export function usernameFor(pw: HTMLInputElement): HTMLInputElement | null {
   const scope: ParentNode = pw.form || document;
