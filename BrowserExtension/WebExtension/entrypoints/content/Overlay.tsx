@@ -2,7 +2,7 @@ import { createEffect, createSignal, For, onCleanup, onMount, Show } from 'solid
 import { browser } from 'wxt/browser';
 import { shouldRequestTotpCopy } from '../../lib/after-fill';
 import { replyErrorMessage } from '../../lib/bridge-status';
-import { fillOtp, generateTargets, isRTL, otpTargets, passwordFields, setValue, usernameFor, visible } from '../../lib/dom';
+import { fillOtp, generateTargets, identityFields, isRTL, otpTargets, passwordFields, setValue, usernameFor, visible } from '../../lib/dom';
 import { t } from '../../lib/i18n';
 import { fieldObstacles } from '../../lib/field-obstacles';
 import { iconPosition, iconPositionBeside, menuLeft, menuVertical } from '../../lib/overlay-layout';
@@ -73,7 +73,7 @@ const groupLabel = (group: ReturnType<typeof groupOf>) =>
   group === 'passkeys' ? t('overlay.passkeys') : t('overlay.passwords');
 
 /** `pw`: the password field of a login form. `otp`: the field, or row of one-digit boxes, for a one-time code. */
-type Target = { field: HTMLInputElement; pw?: HTMLInputElement; otp?: HTMLInputElement[] };
+type Target = { field: HTMLInputElement; pw?: HTMLInputElement; otp?: HTMLInputElement[]; loose?: boolean };
 /** `at`: when the rows were fetched, so a code that has since rolled over is fetched again. */
 type Menu = {
   target: Target;
@@ -164,6 +164,10 @@ export default function Overlay() {
     for (const boxes of otpTargets()) {
       const first = boxes[0];
       if (first && !found.has(first)) found.set(first, { field: first, otp: boxes });
+    }
+    // Email / username boxes on pages that are not login forms: the icon shows, but nothing happens by itself.
+    for (const input of identityFields()) {
+      if (!found.has(input) && !generating.has(input)) found.set(input, { field: input, loose: true });
     }
     setTargets([...found.values()]);
     setTick((n) => n + 1);
@@ -334,7 +338,8 @@ export default function Overlay() {
       } else {
         const { field, pw } = target;
         setValue(pw ? usernameFor(pw) : field, filled.username);
-        setValue(pw || passwordFields().find(visible), filled.password);
+        // A loose email box (a form, not a login) gets the username only.
+        if (!target.loose) setValue(pw || passwordFields().find(visible), filled.password);
         // A page that asks for the code on the same form gets it too.
         const code = otpTargets()[0];
         if (filled.totp && code) fillOtp(code, filled.totp);
@@ -358,7 +363,8 @@ export default function Overlay() {
     if (!autoEnabled || window !== window.top || document.visibilityState !== 'visible') return;
     const list = targets();
     // A password step first; a username-only or code-only step when that is all the page has.
-    const target = list.find((x) => !x.otp && x.pw) ?? list.find((x) => !x.otp) ?? list.find((x) => x.otp);
+    // Only real login steps sign in by themselves; a loose email box on some form never does.
+    const target = list.find((x) => !x.otp && x.pw) ?? list.find((x) => x.otp);
     if (!target || !target.field.isConnected || !visible(target.field)) return;
     const kind = target.otp ? 'otp' : target.pw ? 'login' : 'user';
     if (autoRan.has(kind)) return;

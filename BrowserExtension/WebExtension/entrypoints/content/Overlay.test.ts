@@ -57,3 +57,21 @@ describe('sign in by itself', () => {
     expect(out.submitted).not.toHaveBeenCalled();
   });
 });
+
+it('shows the icon on an email box outside a login form, and never signs in by itself there', async () => {
+  const { send } = await import('../../lib/send');
+  vi.mocked(send).mockImplementation((async (req: { command: string }) =>
+    req.command === 'match' ? { ok: true, rows: [{ id: '1', name: 'Only' }] } : { ok: true, username: 'me', password: 'secret' }) as never);
+  sessionStorage.clear();
+  document.body.innerHTML = `<form><input type=text aria-label="Your email"><button type=submit>Submit</button></form>`;
+  const submitted = vi.fn((e: Event) => e.preventDefault());
+  document.querySelector('form')!.addEventListener('submit', submitted);
+  const host = document.createElement('div');
+  document.body.append(host);
+  const dispose = render(() => createComponent(Overlay, {}), host);
+  await new Promise((r) => setTimeout(r, 1000));
+  expect(host.querySelectorAll('.key')).toHaveLength(1);
+  expect(document.querySelector<HTMLInputElement>('input')!.value).toBe('');
+  expect(submitted).not.toHaveBeenCalled();
+  dispose();
+});
