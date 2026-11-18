@@ -127,6 +127,12 @@
     "s3": "Strong",
     "s4": "Very strong",
     "autoSignIn": "Sign in automatically when a site has only one login",
-    "contextMenu": "Show Triwarden in the right-click menu"
+    "contextMenu": "Show Triwarden in the right-click menu",
+    "search": "Find a login",
+    "noResults": "No logins found.",
+    "link": "Link",
+    "accounts": "Accounts",
+    "allAccounts": "All accounts",
+    "updateApp": "Update Triwarden to search every login."
   }
 }

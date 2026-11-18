@@ -43,6 +43,14 @@ final class CLIBridge {
     /// roll over, and the fill that follows, without asking again. In memory only, per site, and dropped on lock.
     private var revealedSites: [String: Date] = [:]
     private static let revealSeconds: TimeInterval = 60
+    /// `find` answers at most this many logins; the person narrows it by typing.
+    private static let findLimit = 80
+
+    /// The account a login lives in, named only when more than one is unlocked (so single-account setups stay quiet).
+    private static func accountName(for item: VaultItem, in model: AppModel) -> String? {
+        guard model.sessions.count > 1 else { return nil }
+        return model.sessions.first { $0.id == item.accountId }?.account.email
+    }
     /// When each login was last filled into a page, so the ones you use come first. In memory only, dropped on lock.
     private var lastFilled: [String: Date] = [:]
     private weak var model: AppModel?
@@ -208,7 +216,7 @@ final class CLIBridge {
 
     private func handle(_ request: CLIRequest, peer: FramedSocketServer.Peer) async -> CLIResponse {
         guard let model else { return .failure("Triwarden is quitting.") }
-        let browserCommand = [.match, .fill, .save, .copy, .generate, .pending].contains(request.command)
+        let browserCommand = [.match, .fill, .save, .copy, .generate, .pending, .find, .link].contains(request.command)
         if browserCommand { noteBrowser(request) }
         let enabled = UserDefaults.standard.bool(forKey: browserCommand ? Pref.browser : Pref.cli) || approveOverride != nil
         guard enabled else {
@@ -261,8 +269,43 @@ final class CLIBridge {
                 CLIResponse.Row(id: $0.id, name: $0.name, detail: $0.username ?? "", totpPeriod: $0.totp?.period,
                                 icon: Self.iconPNG(for: $0, model: model),
                                 code: withCodes && !$0.reprompt ? $0.totp?.code() : nil,
-                                exact: $0.hosts.contains(host), passkey: $0.hasPasskey)
+                                exact: $0.hosts.contains(host), passkey: $0.hasPasskey,
+                                account: Self.accountName(for: $0, in: model))
             }, autoShow: autoShow)
+        case .find:
+            // Names and usernames only, like `match`, but for the whole vault: the person is looking for a login the
+            // page's site doesn't list yet. Nothing secret leaves the app, so no approval.
+            guard Self.isOwnBinary(peer) else { return .failure("Unknown client.") }
+            guard model.isUnlocked else { return .failure(Self.locked, code: Self.lockedCode) }
+            let q = (request.query ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let host = request.url.flatMap(URL.init(string:))?.host()?.lowercased() ?? ""
+            let found = model.items
+                .filter { !$0.isDeleted && !$0.isArchived && $0.kind == .login && (q.isEmpty || Self.matches($0, q)) }
+                .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+            return .list(found.prefix(Self.findLimit).map {
+                CLIResponse.Row(id: $0.id, name: $0.name, detail: $0.username ?? $0.host ?? "", totpPeriod: $0.totp?.period,
+                                icon: Self.iconPNG(for: $0, model: model),
+                                exact: !host.isEmpty && Self.logins(for: host, in: [$0]).count == 1, passkey: $0.hasPasskey,
+                                account: Self.accountName(for: $0, in: model))
+            })
+        case .link:
+            guard Self.isOwnBinary(peer) else { return .failure("Unknown client.") }
+            guard model.isUnlocked else { return .failure(Self.locked, code: Self.lockedCode) }
+            guard let item = model.items.first(where: { $0.id == request.query && !$0.isDeleted && !$0.isArchived && $0.kind == .login }) else {
+                return .failure("That login is no longer in your vault.")
+            }
+            guard let url = request.url.flatMap(URL.init(string:)), let host = url.host()?.lowercased(),
+                  let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme) else {
+                return .failure("There is no site to link.")
+            }
+            if item.hosts.contains(host) { return .success("linked") }
+            guard await approve(String(localized: "add \(host) to “\(item.name)”"), peer: peer, browser: true) else {
+                return .failure(Self.denied)
+            }
+            var edit = CipherEdit()
+            edit.uris = item.websites + ["\(scheme)://\(host)"]
+            guard await model.updateItem(item.id, edit: edit) else { return .failure("Couldn't save the change.") }
+            return .success("linked")
         case .fill:
             guard model.isUnlocked else { return lockedFillOrCopy() }
             guard let item = model.items.first(where: { $0.id == request.query && !$0.isDeleted && !$0.isArchived }) else {

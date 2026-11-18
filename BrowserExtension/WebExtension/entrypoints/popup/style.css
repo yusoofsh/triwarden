@@ -307,3 +307,58 @@ h2 {
   margin: 1px 0 0;
   accent-color: var(--brand);
 }
+
+.search {
+  width: 100%;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--edge);
+  background: var(--card);
+  color: var(--fg);
+  padding: 0 14px;
+  font: inherit;
+}
+.search:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+.accts {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.accts button {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--edge);
+  background: var(--card);
+  color: var(--muted);
+  font-size: 11px;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.accts button.on {
+  color: var(--fg);
+  border-color: var(--muted);
+  background: var(--hover);
+}
+.chip {
+  flex: none;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--hover);
+  color: var(--muted);
+  font-size: 10.5px;
+}
+.chip.link {
+  background: var(--brand);
+  color: var(--on-brand);
+  font-weight: 600;
+}

@@ -15,6 +15,13 @@ public struct CLIRequest: Codable, Sendable, Equatable {
         /// updates or empty for a new one, `detail` = username), shown in the page. With `query` (a row id) it answers
         /// that one: `field` "save" saves it, anything else is Not Now.
         case pending
+        /// Browser extension: search the whole vault (`query`; empty lists everything, capped), across every unlocked
+        /// account, so a login the page's site doesn't list yet can be found. Rows carry `account` when more than one
+        /// account is unlocked, and `exact` when the login already belongs to the page's `url`.
+        case find
+        /// Browser extension: add the page's site (`url`) to the login `query`, so it matches (and fills) there from
+        /// now on. Needs approval, like a fill, because it edits the vault.
+        case link
     }
     public var command: Command
     public var query: String?
